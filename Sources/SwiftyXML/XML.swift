@@ -188,7 +188,6 @@ open class XML {
     public var attributesOrder: [String] = []
     public var describeChildrenAtTheSameLine = false
     public var addEmptyLineAtBottom = false
-    public var indentDistance = 4
         
     public var xmlName:String {
         get { name }
@@ -540,36 +539,36 @@ extension XML {
         return self.toXMLString()
     }
     
-    public func toXMLString() -> String {
+    public func toXMLString(indentDistance: Int = 4) -> String {
         var result = ""
         var depth:Int = 0
-        describe(xml: self, depth: &depth, result: &result)
+        describe(xml: self, depth: &depth, result: &result, indentDistance: indentDistance)
         return result
     }
     
-    private func describe(xml: XML, depth:inout Int, result: inout String) {
+    private func describe(xml: XML, depth:inout Int, result: inout String, indentDistance: Int) {
         if xml.children.isEmpty {
-            result += xml.getCombine(numTabs: depth)
+            result += xml.getCombine(numTabs: depth, indentDistance: indentDistance)
         } else {
             if xml.describeChildrenAtTheSameLine {
-                result += xml.getStartPart(numTabs: depth).trimmingCharacters(in: .newlines)
+                result += xml.getStartPart(numTabs: depth, indentDistance: indentDistance).trimmingCharacters(in: .newlines)
                 
                 var childString = ""
                 for child in xml.children {
-                    describe(xml: child, depth: &depth, result: &childString)
+                    describe(xml: child, depth: &depth, result: &childString, indentDistance: indentDistance)
                     result += childString.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
                 }
                 
-                result += xml.getEndPart(numTabs: depth).trimmingCharacters(in: .whitespaces)
+                result += xml.getEndPart(numTabs: depth, indentDistance: indentDistance).trimmingCharacters(in: .whitespaces)
             }
             else {
-                result += xml.getStartPart(numTabs: depth)
+                result += xml.getStartPart(numTabs: depth, indentDistance: indentDistance)
                 depth += 1
                 for child in xml.children {
-                    describe(xml: child, depth: &depth, result: &result)
+                    describe(xml: child, depth: &depth, result: &result, indentDistance: indentDistance)
                 }
                 depth -= 1
-                result += xml.getEndPart(numTabs: depth)
+                result += xml.getEndPart(numTabs: depth, indentDistance: indentDistance)
             }
             
             if xml.addEmptyLineAtBottom {
@@ -587,22 +586,22 @@ extension XML {
         return self.attributes.map{ " \($0.0)=\"\($0.1.escaped())\"" }.joined()
     }
     
-    private func getStartPart(numTabs:Int) -> String {
-        return getDescription(numTabs: numTabs, closed: false)
+    private func getStartPart(numTabs:Int, indentDistance: Int) -> String {
+        return getDescription(numTabs: numTabs, closed: false, indentDistance: indentDistance)
     }
     
-    private func getEndPart(numTabs:Int) -> String {
-        return String(repeating: " ", count: numTabs * self.indentDistance) + "</\(name)>\n"
+    private func getEndPart(numTabs:Int, indentDistance: Int) -> String {
+        return String(repeating: " ", count: numTabs * indentDistance) + "</\(name)>\n"
     }
     
-    private func getCombine(numTabs:Int) -> String {
-        return self.getDescription(numTabs: numTabs, closed: true)
+    private func getCombine(numTabs:Int, indentDistance: Int) -> String {
+        return self.getDescription(numTabs: numTabs, closed: true, indentDistance: indentDistance)
     }
     
-    private func getDescription(numTabs:Int, closed:Bool) -> String {
+    private func getDescription(numTabs:Int, closed:Bool, indentDistance: Int) -> String {
         var attr = self.getAttributeString()
         attr = attr.isEmpty ? "" : attr
-        let tabs = String(repeating: " ", count: numTabs * self.indentDistance)
+        let tabs = String(repeating: " ", count: numTabs * indentDistance)
         var valueString: String = ""
         if let v = self.value {
             valueString = v.trimmingCharacters(in: .whitespacesAndNewlines).escaped()
