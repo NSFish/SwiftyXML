@@ -58,121 +58,121 @@ public enum XMLSubscriptResult {
         
         func subscriptResult(_ result: XMLSubscriptResult, byIndex index: Int) -> XMLSubscriptResult {
             switch result {
-            case .null(_):
-                return self
-            case .string(_, let path):
-                return .null(path + ": attribute can not subscript by index: \(index)")
-            case .xml(_, let path):
-                return .null(path + ": single xml can not subscript by index: \(index)")
-            case .array(let xmls, let path):
-                if xmls.indices.contains(index) {
-                    return .xml(xmls[index], path + ".\(index)")
-                } else {
-                    return .null(path + ": index:\(index) out of bounds: \(xmls.indices)")
-                }
+                case .null(_):
+                    return self
+                case .string(_, let path):
+                    return .null(path + ": attribute can not subscript by index: \(index)")
+                case .xml(_, let path):
+                    return .null(path + ": single xml can not subscript by index: \(index)")
+                case .array(let xmls, let path):
+                    if xmls.indices.contains(index) {
+                        return .xml(xmls[index], path + ".\(index)")
+                    } else {
+                        return .null(path + ": index:\(index) out of bounds: \(xmls.indices)")
+                    }
             }
         }
         
         func subscriptResult(_ result: XMLSubscriptResult, byKey key: String) -> XMLSubscriptResult {
             switch result {
-            case .null(_):
-                return self
-            case .string(_, let path):
-                return .null(path + ": attribute can not subscript by key: \(key)")
-            case .xml(let xml, let path):
-                let array = xml.children.filter{ $0.name == key }
-                if !array.isEmpty {
-                    return .array(array, path + ".\(key)")
-                } else {
-                    return .null(path + ": no such children named: \"\(key)\"")
-                }
-            case .array(let xmls, let path):
-                let result = XMLSubscriptResult.xml(xmls[0], path + ".0")
-                return subscriptResult(result, byKey: key)
+                case .null(_):
+                    return self
+                case .string(_, let path):
+                    return .null(path + ": attribute can not subscript by key: \(key)")
+                case .xml(let xml, let path):
+                    let array = xml.children.filter{ $0.name == key }
+                    if !array.isEmpty {
+                        return .array(array, path + ".\(key)")
+                    } else {
+                        return .null(path + ": no such children named: \"\(key)\"")
+                    }
+                case .array(let xmls, let path):
+                    let result = XMLSubscriptResult.xml(xmls[0], path + ".0")
+                    return subscriptResult(result, byKey: key)
             }
         }
         
         func subscriptResult(_ result: XMLSubscriptResult, byAttribute attribute: String) -> XMLSubscriptResult {
             switch result {
-            case .null(_):      return self
-            case .string(_, let path):
-                return .null(path + ": attribute can not subscript by attribute: \(attribute)")
-            case .xml(let xml, let path):
-                if let attr = xml.attributes[attribute] {
-                    return .string(attr, path + ".$\(attribute)")
-                } else {
-                    return .null(path + ": no such attribute named: \(attribute)")
-                }
-            case .array(let xmls, let path):
-                if let attr = xmls[0].attributes[attribute] {
-                    return .string(attr, path + ".0.$\(attribute)")
-                } else {
-                    return .null(path + ".0.$\(attribute)" + ": no such attribute named: \(attribute)")
-                }
+                case .null(_):      return self
+                case .string(_, let path):
+                    return .null(path + ": attribute can not subscript by attribute: \(attribute)")
+                case .xml(let xml, let path):
+                    if let attr = xml.attributes[attribute] {
+                        return .string(attr, path + ".$\(attribute)")
+                    } else {
+                        return .null(path + ": no such attribute named: \(attribute)")
+                    }
+                case .array(let xmls, let path):
+                    if let attr = xmls[0].attributes[attribute] {
+                        return .string(attr, path + ".0.$\(attribute)")
+                    } else {
+                        return .null(path + ".0.$\(attribute)" + ": no such attribute named: \(attribute)")
+                    }
             }
         }
         
         switch key {
-        case .index(let index):
-            return subscriptResult(self, byIndex: index)
-            
-        case .key(let key):
-            return subscriptResult(self, byKey: key)
-        
-        case .attribute(let attribute):
-            return subscriptResult(self, byAttribute: attribute)
+            case .index(let index):
+                return subscriptResult(self, byIndex: index)
+                
+            case .key(let key):
+                return subscriptResult(self, byKey: key)
+                
+            case .attribute(let attribute):
+                return subscriptResult(self, byAttribute: attribute)
         }
     }
     
     public var xml:XML? {
         switch self {
-        case .null(_):
-            return nil
-        case .string(_, _):
-            return nil
-        case .xml(let xml, _): return xml
-        case .array(let xmls, _): return xmls[0]
+            case .null(_):
+                return nil
+            case .string(_, _):
+                return nil
+            case .xml(let xml, _): return xml
+            case .array(let xmls, _): return xmls[0]
         }
     }
     
     public func getXML() throws -> XML {
         switch self {
-        case .null(let error):
-            throw XMLError.subscriptFailue(error)
-        case .string(_, let path):
-            throw XMLError.subscriptFailue("can not get XML from attribute, from keyChain: \(path)")
-        case .xml(let xml, _): return xml
-        case .array(let xmls, _): return xmls[0]
+            case .null(let error):
+                throw XMLError.subscriptFailue(error)
+            case .string(_, let path):
+                throw XMLError.subscriptFailue("can not get XML from attribute, from keyChain: \(path)")
+            case .xml(let xml, _): return xml
+            case .array(let xmls, _): return xmls[0]
         }
     }
     
     public var xmlList:[XML]? {
         switch self {
-        case .null(_):
-            return nil
-        case .string(_, _):
-            return nil
-        case .xml(let xml, _): return [xml]
-        case .array(let xmls, _): return xmls
+            case .null(_):
+                return nil
+            case .string(_, _):
+                return nil
+            case .xml(let xml, _): return [xml]
+            case .array(let xmls, _): return xmls
         }
     }
     
     public func getXMLList() throws -> [XML] {
         switch self {
-        case .null(let error):
-            throw XMLError.subscriptFailue(error)
-        case .string(_, let path):
-            throw XMLError.subscriptFailue("can not get list from attribute, from keyChain: \(path)")
-        case .xml(let xml, _): return [xml]
-        case .array(let xmls, _): return xmls
+            case .null(let error):
+                throw XMLError.subscriptFailue(error)
+            case .string(_, let path):
+                throw XMLError.subscriptFailue("can not get list from attribute, from keyChain: \(path)")
+            case .xml(let xml, _): return [xml]
+            case .array(let xmls, _): return xmls
         }
     }
     
     public var error: String {
         switch self {
-        case .null(let error):
-            return error
-        default: return ""
+            case .null(let error):
+                return error
+            default: return ""
         }
     }
 }
@@ -185,6 +185,11 @@ open class XML {
     fileprivate var value:String?
     fileprivate var children:[XML] = []
     
+    public var attributesOrder: [String] = []
+    public var describeChildrenAtTheSameLine = false
+    public var addEmptyLineAtBottom = false
+    public var indentDistance = 4
+        
     public var xmlName:String {
         get { name }
         set { name = newValue }
@@ -198,7 +203,7 @@ open class XML {
         set { value = newValue }
     }
     public var xmlChildren:[XML] { children }
-
+    
     internal weak var parent:XML?
     
     public init(name:String, attributes:[String:Any] = [:], value: Any? = nil) {
@@ -268,28 +273,28 @@ open class XML {
     
     public subscript(key: XMLSubscriptKey) -> XMLSubscriptResult {
         switch key {
-        case .index(let index):
-            if self.children.indices.contains(index) {
-                return .xml(self.children[index], "[\(index)]")
-            } else {
-                let bounds = self.children.indices
-                return .null("index:\(index) out of bounds: \(bounds)")
-            }
-            
-        case .key(let key):
-            let array = self.children.filter{ $0.name == key }
-            if !array.isEmpty {
-                return .array(array, ".\(key)")
-            } else {
-                return .null("no such children named: \"\(key)\"")
-            }
-            
-        case .attribute(let attribute):
-            if let attr = self.attributes[attribute] {
-                return .string(attr, ".$\(attribute)")
-            } else {
-                return .null("no such attribute named: \"\(attribute)\"")
-            }
+            case .index(let index):
+                if self.children.indices.contains(index) {
+                    return .xml(self.children[index], "[\(index)]")
+                } else {
+                    let bounds = self.children.indices
+                    return .null("index:\(index) out of bounds: \(bounds)")
+                }
+                
+            case .key(let key):
+                let array = self.children.filter{ $0.name == key }
+                if !array.isEmpty {
+                    return .array(array, ".\(key)")
+                } else {
+                    return .null("no such children named: \"\(key)\"")
+                }
+                
+            case .attribute(let attribute):
+                if let attr = self.attributes[attribute] {
+                    return .string(attr, ".$\(attribute)")
+                } else {
+                    return .null("no such attribute named: \"\(attribute)\"")
+                }
         }
     }
     
@@ -367,10 +372,10 @@ extension XML : StringProvider {
 extension XMLSubscriptResult : StringProvider {
     public var string: String? {
         switch self {
-        case .null(_):               return nil
-        case .string(let string, _): return string
-        case .xml(let xml, _):       return xml.value
-        case .array(let xmls, _):    return xmls[0].value
+            case .null(_):               return nil
+            case .string(let string, _): return string
+            case .xml(let xml, _):       return xml.value
+            case .array(let xmls, _):    return xmls[0].value
         }
     }
 }
@@ -546,17 +551,39 @@ extension XML {
         if xml.children.isEmpty {
             result += xml.getCombine(numTabs: depth)
         } else {
-            result += xml.getStartPart(numTabs: depth)
-            depth += 1
-            for child in xml.children {
-                describe(xml: child, depth: &depth, result: &result)
+            if xml.describeChildrenAtTheSameLine {
+                result += xml.getStartPart(numTabs: depth).trimmingCharacters(in: .newlines)
+                
+                var childString = ""
+                for child in xml.children {
+                    describe(xml: child, depth: &depth, result: &childString)
+                    result += childString.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+                }
+                
+                result += xml.getEndPart(numTabs: depth).trimmingCharacters(in: .whitespaces)
             }
-            depth -= 1
-            result += xml.getEndPart(numTabs: depth)
+            else {
+                result += xml.getStartPart(numTabs: depth)
+                depth += 1
+                for child in xml.children {
+                    describe(xml: child, depth: &depth, result: &result)
+                }
+                depth -= 1
+                result += xml.getEndPart(numTabs: depth)
+            }
+            
+            if xml.addEmptyLineAtBottom {
+                result += "\n"
+            }
         }
     }
     
     private func getAttributeString() -> String {
+        if self.attributesOrder.count == self.attributes.count {
+            let orderedAttributes: [(String, String)] = attributesOrder.map { ($0, self.attributes[$0]! as String) }
+            return orderedAttributes.map{ " \($0.0)=\"\($0.1.escaped())\"" }.joined()
+        }
+        
         return self.attributes.map{ " \($0.0)=\"\($0.1.escaped())\"" }.joined()
     }
     
@@ -565,7 +592,7 @@ extension XML {
     }
     
     private func getEndPart(numTabs:Int) -> String {
-        return String(repeating: "\t", count: numTabs) + "</\(name)>\n"
+        return String(repeating: " ", count: numTabs * self.indentDistance) + "</\(name)>\n"
     }
     
     private func getCombine(numTabs:Int) -> String {
@@ -575,24 +602,25 @@ extension XML {
     private func getDescription(numTabs:Int, closed:Bool) -> String {
         var attr = self.getAttributeString()
         attr = attr.isEmpty ? "" : attr
-        let tabs = String(repeating: "\t", count: numTabs)
+        let tabs = String(repeating: " ", count: numTabs * self.indentDistance)
         var valueString: String = ""
         if let v = self.value {
             valueString = v.trimmingCharacters(in: .whitespacesAndNewlines).escaped()
         }
+        
         if attr.isEmpty {
             switch (closed, self.value) {
-            case (true,  .some(_)): return tabs + "<\(name)>\(valueString)</\(name)>\n"
-            case (true,  .none):    return tabs + "<\(name)/>\n"
-            case (false, .some(_)): return tabs + "<\(name)>\(valueString)\n"
-            case (false, .none):    return tabs + "<\(name)>\n"
+                case (true,  .some(_)): return tabs + "<\(name)>\(valueString)</\(name)>\n"
+                case (true,  .none):    return tabs + "<\(name)/>\n"
+                case (false, .some(_)): return tabs + "<\(name)>\(valueString)\n"
+                case (false, .none):    return tabs + "<\(name)>\n"
             }
         } else {
             switch (closed, self.value) {
-            case (true,  .some(_)): return tabs + "<\(name)" + attr + ">\(valueString)</\(name)>\n"
-            case (true,  .none):    return tabs + "<\(name)" + attr + "/>\n"
-            case (false, .some(_)): return tabs + "<\(name)" + attr + ">\(valueString)\n"
-            case (false, .none):    return tabs + "<\(name)" + attr + ">\n"
+                case (true,  .some(_)): return tabs + "<\(name)" + attr + ">\(valueString)</\(name)>\n"
+                case (true,  .none):    return tabs + "<\(name)" + attr + "/>\n"
+                case (false, .some(_)): return tabs + "<\(name)" + attr + ">\(valueString)\n"
+                case (false, .none):    return tabs + "<\(name)" + attr + ">\n"
             }
         }
     }
