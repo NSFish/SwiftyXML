@@ -578,7 +578,8 @@ extension XML {
     }
     
     private func getAttributeString() -> String {
-        if self.attributesOrder.count == self.attributes.count {
+        if self.attributes.count > 0
+        && self.attributes.count == self.attributesOrder.count {
             let orderedAttributes: [(String, String)] = attributesOrder.map { ($0, self.attributes[$0]! as String) }
             return orderedAttributes.map{ " \($0.0)=\"\($0.1.escaped())\"" }.joined()
         }
